@@ -178,18 +178,24 @@ td { padding:6px 10px; vertical-align:middle; overflow:hidden; }
 .tc-item.tc-empty { opacity:.25; }
 .tc-item.tc-empty:hover { opacity:.7; }
 .tc-item.tc-new { color:#2563eb; font-weight:700; }
+/* Asana-style left-side expand arrow */
+.task-expand-arrow { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; min-width:16px; cursor:pointer; color:#c1bfd4; border-radius:3px; margin-right:4px; transition:transform .18s ease, color .12s, background .12s; }
+.task-expand-arrow:hover { color:#4338ca; background:#ede9fe; }
+.task-expand-arrow.sub-open { transform:rotate(90deg); color:#4338ca; }
+.task-expand-placeholder { display:inline-block; width:16px; height:16px; min-width:16px; margin-right:4px; flex-shrink:0; }
 .tc-subtask { display:inline-flex; align-items:center; gap:2px; font-size:11px; color:#6b7280; white-space:nowrap; border-radius:4px; padding:1px 3px; }
-.subtask-row { background:#fff; }
-.subtask-row:hover { background:#f6f6fb; transition:background .1s; }
-.subtask-row td { border-top:1px solid #f1f0f6; padding-top:4px; padding-bottom:4px; }
+.subtask-row { background:#fafafe; display:none; }
+.subtask-row.sub-visible { display:table-row; }
+.subtask-row:hover { background:#f4f3fb !important; }
+.subtask-row td { border-top:1px solid #eeecf8; padding-top:5px; padding-bottom:5px; }
 .sub-done-btn { background:none; border:none; cursor:pointer; padding:0; display:flex; align-items:center; justify-content:center; width:100%; }
 .sub-done-btn circle { transition:stroke .15s, fill .15s; }
 .sub-done-btn:hover circle { stroke:#4338ca; fill:#ede9fe; }
-.subtask-connector-cell { padding:0 !important; vertical-align:middle; position:relative; }
-.subtask-tree-line { display:block; margin:0 auto; width:14px; height:100%; border-left:1.5px solid #c8c7d4; border-bottom:1.5px solid #c8c7d4; border-bottom-left-radius:3px; min-height:20px; }
-.subtask-row.last-sub .subtask-tree-line { height:calc(50% + 2px); margin-top:0; align-self:flex-start; }
-.subtask-name-td { padding-left:4px !important; }
-.subtask-name-text { color:#1e1f25; font-size:12.5px; font-weight:400; }
+.subtask-connector-cell { padding:0 !important; vertical-align:middle; position:relative; width:54px; }
+.subtask-tree-line { display:block; margin-left:auto; margin-right:6px; width:14px; height:100%; border-left:1.5px solid #d4d2e0; border-bottom:1.5px solid #d4d2e0; border-bottom-left-radius:4px; min-height:22px; }
+.subtask-row.last-sub .subtask-tree-line { height:calc(50% + 2px); margin-top:0; }
+.subtask-name-td { padding-left:6px !important; }
+.subtask-name-text { color:#2d2e3a; font-size:12px; font-weight:400; }
 
 .ref-num { font-size:11px; font-weight:700; color:#6366f1; background:#eef2ff; padding:2px 7px; border-radius:5px; white-space:nowrap; font-family:monospace; letter-spacing:.02em; }
 
@@ -978,12 +984,12 @@ function render() {
       var isNew=cmtCount>0&&!seenThisSession.has(task.gid);
       var cmtHtml=cmtCount>0?'<span class="tc-item'+(isNew?' tc-new':'')+'>💬 '+cmtCount+'</span>':'<span class="tc-item tc-empty">💬</span>';
       var incompleteSubs=(task.subtasks||[]).filter(function(s){return !s.completed;});
-      var subHtml=incompleteSubs.length>0?'<span class="tc-subtask" title="'+incompleteSubs.length+' subtask'+(incompleteSubs.length>1?'s':'')+'"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2v5a1 1 0 001 1h6M2 7l2-2M2 7l2 2" stroke="#6b7280" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> '+incompleteSubs.length+'</span>':'';
+      var subHtml=incompleteSubs.length>0?'<span class="task-expand-arrow" id="subtoggle-'+task.gid+'" title="'+incompleteSubs.length+' subtask'+(incompleteSubs.length===1?'':'s')+'  –  click to expand" onclick="event.stopPropagation();toggleSubtasks(\''+task.gid+'\',this)"><svg width="6" height="10" viewBox="0 0 6 10" fill="none"><path d="M1 1.5l4 3.5-4 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>':'<span class="task-expand-placeholder"></span>';
       html+='<tr id="row-'+task.gid+'" class="'+(isSel?'row-selected':'')+staleRow+'">'+
         '<td class="td-check"><input type="checkbox" class="row-select-cb" '+(isSel?'checked':'')+' onchange="toggleSelect(\''+task.gid+'\',this)"></td>'+
         '<td><span class="ref-num" title="Task reference #'+taskRefMap.get(task.gid)+'">#'+taskRefMap.get(task.gid)+'</span></td>'+
-        '<td class="td-name"><div class="task-name-row"><div class="task-name-text">'+nameHtml+'</div>'+
-        '<span class="task-counts" id="tc-'+task.gid+'" onclick="toggleDetail(\''+task.gid+'\')" title="Click to view updates">'+cmtHtml+subHtml+'</span></div></td>'+
+        '<td class="td-name"><div class="task-name-row">'+subHtml+'<div class="task-name-text">'+nameHtml+'</div>'+
+        '<span class="task-counts" id="tc-'+task.gid+'" onclick="toggleDetail(\''+task.gid+'\')" title="Click to view updates">'+cmtHtml+'</span></div></td>'+
         '<td style="white-space:nowrap;color:#6b7280;font-size:11px">'+fmtDate(task.created_at)+'</td>'+
         '<td><span class="date-cell" onclick="editDueDate(\''+task.gid+'\',\''+esc(task.due_on||'')+'\',this)">'+esc(task.due_on||'—')+'</span></td>'+
         '<td>'+statusDropdown(task.gid,statusGid)+'</td>'+
@@ -998,7 +1004,7 @@ function render() {
         var subStatusGid=getStatusGid(sub);
         var subAssignGid=getAssignedTo(sub); subAssignGid=subAssignGid?subAssignGid.gid:'';
         var safeSubName=(sub.name||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
-        html+='<tr class="subtask-row'+(isLast?' last-sub':'')+'" id="subtask-row-'+sub.gid+'">'+
+        html+='<tr class="subtask-row'+(isLast?' last-sub':'')+'" id="subtask-row-'+sub.gid+'" data-parent="'+task.gid+'">'+
           '<td class="td-check"><button class="sub-done-btn" onclick="completeTask(\''+sub.gid+'\')" title="Mark complete"><svg viewBox="0 0 18 18" width="16" height="16" fill="none"><circle cx="9" cy="9" r="7.5" stroke="#9e9eb0" stroke-width="1.5" fill="none"/></svg></button></td>'+
           '<td class="subtask-connector-cell"><span class="subtask-tree-line"></span></td>'+
           '<td class="td-name subtask-name-td"><div class="task-name-row"><div class="task-name-text subtask-name-text">'+esc(sub.name||'(untitled)')+'</div></div></td>'+
@@ -1208,19 +1214,18 @@ function renderHiring() {
   document.getElementById('hiring-wrap').innerHTML=html;
 }
 
-// ── Event listeners ────────────────────────────────────────────────
-document.querySelectorAll('.filter-btn').forEach(function(btn) {
-  btn.addEventListener('click',function(){setFilter(btn.dataset.filter);});
-});
-
-// ── Init ───────────────────────────────────────────────────────────
-if (loadCreds()) {
-  showSetup(false);
-  loadAll();
-} else {
-  showSetup(true);
+// ── Subtask toggle ─────────────────────────────────────────────────
+function toggleSubtasks(taskGid, iconEl) {
+  var rows = document.querySelectorAll('[data-parent="' + taskGid + '"]');
+  var isOpen = iconEl && iconEl.classList.contains('sub-open');
+  rows.forEach(function(row) {
+    if (isOpen) { row.classList.remove('sub-visible'); }
+    else { row.classList.add('sub-visible'); }
+  });
+  if (iconEl) {
+    if (isOpen) { iconEl.classList.remove('sub-open'); }
+    else { iconEl.classList.add('sub-open'); }
+  }
 }
-</script>
-</body>
-</html>
-                  
+
+// ── Event listeners ──────────────────────────
