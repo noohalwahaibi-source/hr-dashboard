@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy to Netlify
+      - name: Deploy to Netlify via CLI
         run: |
-          zip deploy.zip index.html
-          curl -X POST -H "Authorization: Bearer ${{ secrets.NETLIFY_PAT }}" -H "Content-Type: application/zip" --data-binary @deploy.zip "https://api.netlify.com/api/v1/sites/06495289-83de-45ff-b623-0e595632cbbf/deploys"
+          npm install -g netlify-cli --silent
+          netlify deploy --prod --dir=. --auth=${{ secrets.NETLIFY_PAT }} --site=06495289-83de-45ff-b623-0e595632cbbf
