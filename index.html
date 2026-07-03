@@ -239,7 +239,7 @@ input[type="checkbox"] { width:14px; height:14px; cursor:pointer; accent-color:#
 
   <div class="top-bar">
     <div class="top-bar-left">
-      <h1>&#128203; HR Tasks Dashboard &mdash; All Staff</h1>
+      <h1>&#128203; HR Tasks Dashboard &mdash; All Staff <span style="font-size:10px;font-weight:500;background:#dcfce7;color:#16a34a;border-radius:4px;padding:2px 7px;vertical-align:middle;margin-left:6px;">&#10003; Pipeline Live</span></h1>
       <div class="subtitle" id="subtitle">Loading tasks...</div>
     </div>
     <div class="top-bar-right">
@@ -1223,9 +1223,4 @@ function toggleSubtasks(taskGid, iconEl) {
     else { row.classList.add('sub-visible'); }
   });
   if (iconEl) {
-    if (isOpen) { iconEl.classList.remove('sub-open'); }
-    else { iconEl.classList.add('sub-open'); }
-  }
-}
-
-// ── Event listeners ──────────────────────────
+    if (isOpen) { iconEl.classList
